@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Data</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-size: 1rem;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-weight: 700;
+            background-color: lightblue;
+        }
+
+        th {
+            background-color: black;
+            font-weight: bold;
+            color: white;
+        }
+
+        input {
+            padding: 6px;
+            border-radius: 15px 5px;
+        }
+
+        body {
+            background-image: url(R.jpg);
+        }
+    </style>
+</head>
+
+<body>
+    <form method="get" action="">
+        <input type="text" name="city" id="cityInput" placeholder="Enter a city" value="">
+        <input type="submit" value="Search">
+    </form>
+    <br><br>
+
+    <div id="weatherData"></div>
+
+    <script>
+        // Function to fetch weather data and update the DOM
+        function fetchWeatherData(city) {
+            // Make an HTTP request to fetch the weather data from the API endpoint
+            fetch(`lastone.php?city=${city}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Extract the weather data and manipulate the DOM to display it
+                    const weatherDataElement = document.getElementById('weatherData');
+                    let html = '<table>';
+                    html +=
+                        '<tr><th>Date</th><th>Temperature</th><th>Humidity</th><th>Wind Speed</th><th>Pressure</th></tr>';
+
+                    // Check if data is an array
+                    if (Array.isArray(data)) {
+                        // Loop through the weather data and generate table rows
+                        data.forEach(weather => {
+                            const {
+                                date,
+                                temperature,
+                                humidity,
+                                windSpeed,
+                                pressure
+                            } = weather;
+                            html += '<tr>';
+                            html += `<td>${date}</td>`;
+                            html += `<td>${temperature}</td>`;
+                            html += `<td>${humidity}</td>`;
+                            html += `<td>${windSpeed}</td>`;
+                            html += `<td>${pressure}</td>`;
+                            html += '</tr>';
+                        });
+                    } else {
+                        // Handle the case when data is not an array (e.g., error response)
+                        html += '<tr><td colspan="5">No weather data found.</td></tr>';
+                    }
+
+                    html += '</table>';
+
+                    // Set the generated HTML content to the weatherDataElement
+                    weatherDataElement.innerHTML = html;
+
+
+                    // Set the generated HTML content to the weatherDataElement
+                    weatherDataElement.innerHTML = html;
+                })
+                .catch(error => console.log('Error:', error));
+        }
+
+        // Store the last searched city in localStorage when the form is submitted
+        document.querySelector('form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const city = document.getElementById('cityInput').value;
+
+            // Store the city in localStorage
+            localStorage.setItem('lastSearchedCity', city);
+
+            // Fetch weather data for the searched city
+            fetchWeatherData(city);
+        });
+
+        // Retrieve the last searched city from localStorage
+        const lastSearchedCity = localStorage.getItem('lastSearchedCity');
+        const cityInput = document.getElementById('cityInput');
+
+        // Set the value of the city input field to the last searched city
+        if (lastSearchedCity) {
+            cityInput.value = lastSearchedCity;
+            fetchWeatherData(lastSearchedCity);
+        } else {
+            fetchWeatherData('Mesa'); // Fetch default weather data for Mesa
+        }
+    </script>
+</body>
+
+</html>
